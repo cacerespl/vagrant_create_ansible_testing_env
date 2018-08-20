@@ -1,0 +1,32 @@
+---
+- hosts: all
+  become: yes
+  handlers:
+    - name: Restart ssh
+      service: name=sshd state=restarted
+  tasks:
+  - name: Create user Ansible
+    user:
+      name: ansible
+      password: $1$1VXiB9sN$soud1glNEHfmTPbo4MIYr1
+      groups: wheel
+      shell: /bin/bash 
+  - name: UP Eth1 interface
+    shell: ifup eth1
+  - name: Allow ansible user sudo privilege without a password
+    lineinfile:
+      dest: /etc/sudoers
+      state: present
+      regexp: '^%wheel'
+      line: '%wheel ALL=(ALL) NOPASSWD: ALL'
+      validate: 'visudo -cf %s'
+  - name: Allowing password auth
+    lineinfile:
+      dest: /etc/ssh/sshd_config
+      regexp: "{{ item.regexp }}"
+      line: "{{ item.line }}"
+    with_items:
+      - { regexp: '^PasswordAuthentication no$', line: '#PasswordAuthentication no' }
+      - { regexp: '^#PasswordAuthentication yes$', line: 'PasswordAuthentication yes' }
+    notify: 
+      - Restart ssh

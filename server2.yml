@@ -1,0 +1,17 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+  - name: Create user Ansible
+    user:
+      name: ansible
+      password: $1$1VXiB9sN$soud1glNEHfmTPbo4MIYr1
+      groups: sudo
+      shell: /bin/bash 
+  - name: Allow ansible user sudo privilege without a password
+    lineinfile:
+      dest: /etc/sudoers
+      state: present
+      regexp: '^%sudo'
+      line: '%sudo ALL=(ALL) NOPASSWD: ALL'
+      validate: 'visudo -cf %s'

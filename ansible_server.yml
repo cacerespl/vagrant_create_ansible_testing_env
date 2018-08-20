@@ -1,0 +1,25 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: Install Repository for ansible
+      apt_repository:
+        repo: ppa:ansible/ansible
+    - name: Install Ansible 
+      apt: name=ansible state=latest update_cache=yes
+    - name: Create Ansible user
+      user: 
+        name: ansible
+        password: $1$1VXiB9sN$soud1glNEHfmTPbo4MIYr1
+        generate_ssh_key: yes
+        ssh_key_bits: 2048
+        ssh_key_file: .ssh/id_rsa
+        groups: sudo
+        shell: /bin/bash
+    - name: Allow ansible user sudo privilege without a password
+      lineinfile:
+        dest: /etc/sudoers
+        state: present
+        regexp: '^%sudo'
+        line: '%sudo ALL=(ALL) NOPASSWD: ALL'
+        validate: 'visudo -cf %s'
